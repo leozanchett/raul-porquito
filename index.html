@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Porquinho do Raul</title>
+<meta name="theme-color" content="#FFF6E0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Porquinho">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #FFF6E0;
+    --card: #FFFFFF;
+    --ink: #3A1F2B;
+    --muted: #8A6F7A;
+    --line: #F1E3C8;
+    --soft: #F6EEDC;
+    --pig: #FF8FAB;
+    --pig-dark: #FF6F91;
+    --pig-deep: #C2185B;
+    --earn: #1FA463;
+    --earn-soft: #E3F7EC;
+    --spend: #EE5F37;
+    --spend-soft: #FFEAE3;
+    --coin: #F5B700;
+    --coin-dark: #D99A00;
+    --font: "Baloo 2", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 18px;
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  input { -webkit-user-select: text; user-select: text; }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    display: grid;
+    gap: 20px;
+  }
+  @media (min-width: 820px) {
+    .app { grid-template-columns: 420px 1fr; align-items: start; padding-top: max(32px, env(safe-area-inset-top)); }
+    .left { position: sticky; top: 32px; }
+  }
+
+  .card { background: var(--card); border-radius: 32px; box-shadow: 0 6px 0 var(--line); }
+
+  .hero { position: relative; overflow: hidden; padding: 20px 20px 24px; text-align: center; }
+  .hero svg { width: min(250px, 72%); height: auto; display: block; margin: 0 auto; cursor: pointer; touch-action: manipulation; }
+  .who { font-size: 20px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+  .balance {
+    font-size: clamp(44px, 12vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+  .balance.neg { color: var(--spend); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  .big {
+    border: 0;
+    border-radius: 22px;
+    padding: 16px 12px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, .18);
+    transition: transform .08s, box-shadow .08s;
+  }
+  .big:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, .18); }
+  .big:disabled { opacity: .4; cursor: default; }
+  .big.earn { background: var(--earn); }
+  .big.spend { background: var(--spend); }
+  .big.ghost { background: var(--soft); color: var(--ink); box-shadow: 0 6px 0 #E6D6B4; }
+
+  .history { padding: 20px; min-height: 200px; }
+  .hist-head h2 { margin: 0; font-size: 26px; }
+  .stats { margin: 2px 0 0; color: var(--muted); font-weight: 600; font-size: 16px; }
+  .empty { text-align: center; color: var(--muted); font-size: 20px; padding: 32px 8px; margin: 0; }
+  .day { font-size: 16px; font-weight: 700; color: var(--muted); margin: 18px 0 8px; }
+  .items { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .item {
+    display: grid;
+    grid-template-columns: 44px 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 6px 10px 10px;
+    border-radius: 18px;
+    background: var(--earn-soft);
+  }
+  .item.out { background: var(--spend-soft); }
+  .ico {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 28px; font-weight: 800; line-height: 1; color: #fff;
+    background: var(--earn);
+  }
+  .item.out .ico { background: var(--spend); }
+  .note { font-weight: 700; font-size: 19px; line-height: 1.2; overflow-wrap: break-word; }
+  @media (max-width: 420px) {
+    .history { padding: 16px 12px; }
+    .item { gap: 8px; grid-template-columns: 36px 1fr auto auto; }
+    .ico { width: 36px; height: 36px; font-size: 24px; }
+    .note, .amt { font-size: 17px; }
+    .del { width: 32px; }
+  }
+  .time { font-size: 14px; color: var(--muted); }
+  .amt { font-weight: 800; font-size: 20px; white-space: nowrap; color: var(--earn); font-variant-numeric: tabular-nums; }
+  .item.out .amt { color: var(--spend); }
+  .del {
+    border: 0; background: transparent;
+    width: 40px; height: 40px; border-radius: 50%;
+    color: var(--muted); font-size: 26px; line-height: 1;
+  }
+  .del:active { background: rgba(0, 0, 0, .06); }
+
+  .foot { text-align: center; }
+  .link { border: 0; background: none; color: var(--muted); font-size: 15px; font-weight: 600; text-decoration: underline; padding: 8px; }
+
+  dialog {
+    border: 0;
+    border-radius: 28px;
+    padding: 24px;
+    width: min(540px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: max(16px, 5vh) auto auto;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: 0 20px 60px rgba(58, 31, 43, .25);
+  }
+  dialog::backdrop { background: rgba(58, 31, 43, .45); }
+  dialog h2 { margin: 0 0 12px; font-size: 28px; line-height: 1.15; }
+  dialog p { margin: 0 0 12px; }
+
+  .amount {
+    width: 100%;
+    font: inherit;
+    font-size: 40px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--ink);
+    background: #FFFCF5;
+    border: 3px solid var(--line);
+    border-radius: 20px;
+    padding: 8px 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .text {
+    width: 100%;
+    font: inherit;
+    font-size: 20px;
+    color: var(--ink);
+    background: #FFFCF5;
+    border: 3px solid var(--line);
+    border-radius: 16px;
+    padding: 10px 14px;
+  }
+  .amount:focus, .text:focus { outline: none; border-color: var(--accent, var(--earn)); }
+  dialog[data-mode="out"] { --accent: var(--spend); }
+  .label { display: block; font-weight: 700; font-size: 19px; margin: 18px 0 8px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    border: 0;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 17px;
+    font-weight: 700;
+    background: var(--soft);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, .12);
+  }
+  .chip:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0, 0, 0, .12); }
+  .chip[aria-pressed="true"] { background: var(--accent, var(--earn)); color: #fff; }
+  .money .chip { color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+  .money .chip.clear { background: var(--soft); color: var(--muted); text-shadow: none; }
+
+  .warn { color: var(--spend); font-weight: 700; min-height: 1.4em; margin: 10px 0 0; }
+  .row { display: flex; gap: 12px; margin-top: 16px; }
+  .row .big { flex: 1; font-size: 21px; }
+  .stack { display: grid; gap: 12px; margin-top: 8px; }
+  .stack .big { font-size: 20px; text-align: center; }
+  .confirm-what { font-weight: 800; font-size: 22px; }
+
+  /* Animações do porquinho */
+  .coin { opacity: 0; }
+  .coin.drop { animation: drop .7s cubic-bezier(.55, 0, .8, .2) forwards; }
+  .coin.pop { animation: popout .8s ease-out forwards; }
+  @keyframes drop {
+    0% { transform: translateY(-20px); opacity: 0; }
+    15% { opacity: 1; }
+    100% { transform: translateY(74px); opacity: 1; }
+  }
+  @keyframes popout {
+    0% { transform: translateY(74px); opacity: 1; }
+    60% { transform: translateY(-14px); opacity: 1; }
+    100% { transform: translateY(-30px); opacity: 0; }
+  }
+  #pigBody { transform-origin: 130px 206px; }
+  #pigBody.boing { animation: boing .5s ease-out; }
+  @keyframes boing {
+    0%, 100% { transform: scale(1, 1); }
+    30% { transform: scale(1.06, .92); }
+    55% { transform: scale(.97, 1.05); }
+    75% { transform: scale(1.02, .98); }
+  }
+  .float {
+    position: absolute; left: 50%; top: 30%;
+    font-size: 30px; font-weight: 800; white-space: nowrap;
+    pointer-events: none;
+    animation: floatUp 1.5s ease-out forwards;
+  }
+  .float.in { color: var(--earn); }
+  .float.out { color: var(--spend); }
+  .float.oink { color: var(--pig-deep); top: 8%; left: 66%; }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, 10px) scale(.8); }
+    20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -60px) scale(1); }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="left">
+    <section class="card hero" id="hero">
+      <svg viewBox="0 -30 260 240" id="pig" role="button" aria-label="Porquinho (toque para ouvir)">
+        <defs>
+          <clipPath id="aboveSlot"><rect x="0" y="-60" width="260" height="125"/></clipPath>
+        </defs>
+        <ellipse cx="135" cy="206" rx="86" ry="6" fill="#3A1F2B" opacity=".08"/>
+        <g id="pigBody">
+          <rect x="68" y="160" width="26" height="46" rx="10" fill="#FF6F91"/>
+          <rect x="104" y="160" width="26" height="46" rx="10" fill="#FF6F91"/>
+          <rect x="146" y="160" width="26" height="46" rx="10" fill="#FF6F91"/>
+          <rect x="180" y="160" width="26" height="46" rx="10" fill="#FF6F91"/>
+          <path d="M40 112 C22 104 16 124 30 126 C42 128 40 110 26 112" fill="none" stroke="#FF6F91" stroke-width="6" stroke-linecap="round"/>
+          <path d="M156 66 Q160 40 183 26 Q195 20 195 32 Q194 52 186 70 Z" fill="#F25C85"/>
+          <ellipse cx="130" cy="122" rx="96" ry="68" fill="#FF8FAB"/>
+          <path d="M176 74 Q182 46 207 31 Q219 25 218 37 Q215 62 204 84 Q190 84 176 74 Z" fill="#FF6F91"/>
+          <path d="M185 71 Q190 52 206 40 Q212 37 211 44 Q209 62 201 78 Q192 78 185 71 Z" fill="#E94F7C"/>
+          <ellipse cx="88" cy="94" rx="26" ry="11" fill="#fff" opacity=".35" transform="rotate(-24 88 94)"/>
+          <rect x="94" y="60" width="48" height="10" rx="5" fill="#C2185B"/>
+          <circle cx="190" cy="106" r="7" fill="#3A1F2B"/>
+          <circle cx="192.5" cy="103.5" r="2.2" fill="#fff"/>
+          <ellipse cx="188" cy="136" rx="12" ry="7" fill="#FF6F91" opacity=".6"/>
+          <ellipse cx="226" cy="124" rx="20" ry="25" fill="#FF6F91"/>
+          <ellipse cx="220" cy="124" rx="3.5" ry="6" fill="#C2185B"/>
+          <ellipse cx="232" cy="124" rx="3.5" ry="6" fill="#C2185B"/>
+          <path d="M194 152 Q203 159 212 152" fill="none" stroke="#C2185B" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <g clip-path="url(#aboveSlot)">
+          <g id="coin" class="coin">
+            <circle cx="118" cy="10" r="17" fill="#F5B700" stroke="#D99A00" stroke-width="4"/>
+            <circle cx="118" cy="10" r="9" fill="none" stroke="#FFE07A" stroke-width="3"/>
+          </g>
+        </g>
+      </svg>
+      <div class="who" id="who">Raul tem no porquinho</div>
+      <div class="balance" id="balance">R$ 0,00</div>
+      <div class="actions">
+        <button class="big earn" id="earnBtn">+ Ganhei</button>
+        <button class="big spend" id="spendBtn">− Gastei</button>
+      </div>
+    </section>
+  </div>
+
+  <div>
+    <section class="card history">
+      <div class="hist-head">
+        <h2>Entrou e saiu</h2>
+        <p class="stats" id="stats"></p>
+      </div>
+      <p class="empty" id="empty">Ainda não tem nada aqui.<br>Quando ganhar dinheiro, toque em <b>+ Ganhei</b>!</p>
+      <div id="list"></div>
+    </section>
+    <div class="foot"><button class="link" id="backupOpen">Cópia de segurança (para os pais)</button></div>
+  </div>
+</main>
+
+<dialog id="entryDlg">
+  <form id="entryForm" autocomplete="off">
+    <h2 id="dlgTitle">Quanto você ganhou?</h2>
+    <input class="amount" id="amount" inputmode="numeric" placeholder="R$ 0,00" aria-label="Valor" autofocus>
+    <div class="chips money" id="moneyChips"></div>
+    <label class="label" for="note" id="noteLabel">De onde veio esse dinheiro?</label>
+    <input class="text" id="note" maxlength="60" enterkeyhint="done">
+    <div class="chips" id="tagChips"></div>
+    <p class="warn" id="warn"></p>
+    <div class="row">
+      <button type="button" class="big ghost" id="cancelBtn">Cancelar</button>
+      <button type="submit" class="big earn" id="saveBtn" disabled>Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDlg">
+  <h2>Apagar este registro?</h2>
+  <p class="confirm-what" id="confirmText"></p>
+  <div class="row">
+    <button type="button" class="big ghost" id="confirmNo" autofocus>Não</button>
+    <button type="button" class="big spend" id="confirmYes">Apagar</button>
+  </div>
+</dialog>
+
+<dialog id="backupDlg">
+  <h2>Cópia de segurança</h2>
+  <p>Tudo fica guardado só neste tablet. De vez em quando, baixe uma cópia e guarde no Drive ou mande para você mesmo no WhatsApp. Se o tablet for trocado ou o app for apagado, dá para recuperar tudo com ela.</p>
+  <div class="stack">
+    <button type="button" class="big earn" id="exportBtn">Baixar cópia</button>
+    <label class="big ghost" for="importFile">Recuperar de uma cópia</label>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+    <button type="button" class="big ghost" id="backupClose">Fechar</button>
+  </div>
+</dialog>
+
+<script>
+  const NOME = 'Raul';
+  const KEY = 'porquinho-do-raul';
+
+  const EARN_TAGS = [['💰', 'Mesada'], ['🎁', 'Presente'], ['🎂', 'Aniversário'], ['🧹', 'Ajudei em casa'], ['🦷', 'Dente de leite'], ['👵', 'Vovó e vovô']];
+  const SPEND_TAGS = [['🧸', 'Brinquedo'], ['🍬', 'Doce'], ['📒', 'Figurinhas'], ['🍔', 'Lanche'], ['🎮', 'Jogo'], ['🎁', 'Presente pra alguém']];
+  // Cores aproximadas das notas e moedas do real
+  const MONEY = [[100, 'R$ 1', '#A8956A'], [200, 'R$ 2', '#4F7FA6'], [500, 'R$ 5', '#8C5BA8'], [1000, 'R$ 10', '#D24A3C'], [2000, 'R$ 20', '#D9A200'], [5000, 'R$ 50', '#C8742A'], [10000, 'R$ 100', '#2E6DB4']];
+
+  const $ = s => document.querySelector(s);
+  const brlFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const brl = c => brlFmt.format(c / 100);
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+  const valid = e => e && (e.type === 'in' || e.type === 'out') && Number.isInteger(e.cents) && e.cents > 0
+    && typeof e.note === 'string' && typeof e.at === 'string' && !isNaN(Date.parse(e.at));
+  const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const sum = list => list.reduce((s, e) => s + (e.type === 'in' ? e.cents : -e.cents), 0);
+
+  function load() {
+    try {
+      const data = JSON.parse(localStorage.getItem(KEY));
+      return Array.isArray(data?.entries) ? data.entries.filter(valid) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ version: 1, entries }));
+      navigator.storage?.persist?.();
+      return true;
+    } catch {
+      alert('Não consegui salvar. O armazenamento do tablet pode estar cheio.');
+      return false;
+    }
+  }
+
+  let entries = load();
+
+  // ---------- Saldo ----------
+  let shown = sum(entries);
+  function renderBalance(animate) {
+    const target = sum(entries);
+    const el = $('#balance');
+    el.classList.toggle('neg', target < 0);
+    if (!animate || reducedMotion.matches || shown === target) {
+      shown = target;
+      el.textContent = brl(target);
+      return;
+    }
+    const from = shown, start = performance.now(), dur = 700;
+    const step = now => {
+      const t = Math.min(1, (now - start) / dur);
+      shown = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+      el.textContent = brl(shown);
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // ---------- Histórico ----------
+  const dayFmt = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const dayFmtYear = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const timeFmt = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+  function dayLabel(d) {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    if (dayKey(d) === dayKey(today)) return 'Hoje';
+    if (dayKey(d) === dayKey(yesterday)) return 'Ontem';
+    const s = (d.getFullYear() === today.getFullYear() ? dayFmt : dayFmtYear).format(d);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function renderList() {
+    const list = $('#list');
+    list.replaceChildren();
+    const sorted = [...entries].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+    $('#empty').hidden = sorted.length > 0;
+
+    const earned = entries.filter(e => e.type === 'in').reduce((s, e) => s + e.cents, 0);
+    const spent = entries.filter(e => e.type === 'out').reduce((s, e) => s + e.cents, 0);
+    $('#stats').textContent = sorted.length ? `Já ganhou ${brl(earned)} · Já gastou ${brl(spent)}` : '';
+
+    let lastKey = null, ul = null;
+    for (const e of sorted) {
+      const d = new Date(e.at);
+      if (dayKey(d) !== lastKey) {
+        lastKey = dayKey(d);
+        const h = document.createElement('h3');
+        h.className = 'day';
+        h.textContent = dayLabel(d);
+        ul = document.createElement('ul');
+        ul.className = 'items';
+        list.append(h, ul);
+      }
+      const sign = e.type === 'in' ? '+' : '−';
+      const li = document.createElement('li');
+      li.className = `item ${e.type}`;
+      li.innerHTML = '<span class="ico" aria-hidden="true"></span><div><div class="note"></div><div class="time"></div></div><div class="amt"></div><button class="del" aria-label="Apagar">×</button>';
+      li.querySelector('.ico').textContent = sign;
+      li.querySelector('.note').textContent = e.note;
+      li.querySelector('.time').textContent = timeFmt.format(d);
+      li.querySelector('.amt').textContent = sign + brl(e.cents);
+      li.querySelector('.del').addEventListener('click', () => askDelete(e));
+      ul.append(li);
+    }
+  }
+
+  function renderAll(animate) {
+    renderBalance(animate);
+    renderList();
+  }
+
+  // ---------- Animação ----------
+  function restartAnim(el, cls) {
+    el.classList.remove('drop', 'pop', 'boing');
+    el.getBoundingClientRect();
+    el.classList.add(cls);
+  }
+
+  function floatText(text, cls) {
+    const f = document.createElement('div');
+    f.className = `float ${cls}`;
+    f.textContent = text;
+    f.addEventListener('animationend', () => f.remove());
+    $('#hero').append(f);
+  }
+
+  function celebrate(e) {
+    if (reducedMotion.matches) return;
+    restartAnim($('#coin'), e.type === 'in' ? 'drop' : 'pop');
+    setTimeout(() => restartAnim($('#pigBody'), 'boing'), e.type === 'in' ? 650 : 0);
+    floatText((e.type === 'in' ? '+' : '−') + brl(e.cents), e.type);
+  }
+
+  // ---------- Som de porco ----------
+  // Sintetizado na hora (sem arquivo de áudio), então funciona sem internet.
+  let audio = null;
+  function getAudio() {
+    if (!audio) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      const ctx = new AC();
+      const out = ctx.createGain();
+      out.gain.value = 1.8;
+      out.connect(ctx.destination);
+      audio = { ctx, out };
+    }
+    if (audio.ctx.state === 'suspended') audio.ctx.resume();
+    return audio;
+  }
+
+  // Um "óinc": voz anasalada que sobe e desce, com um ronco tremido por cima.
+  function oinkAt(ctx, out, t, pitch = 1, len = 0.3) {
+    const end = t + len;
+    const f = 160 * pitch;
+
+    const voice = ctx.createOscillator();
+    voice.type = 'sawtooth';
+    voice.frequency.setValueAtTime(f, t);
+    voice.frequency.linearRampToValueAtTime(f * 1.8, t + len * 0.22);
+    voice.frequency.exponentialRampToValueAtTime(f * 0.85, end);
+
+    const grunt = ctx.createOscillator();
+    grunt.type = 'square';
+    grunt.frequency.value = 38 * pitch;
+    const gruntDepth = ctx.createGain();
+    gruntDepth.gain.value = 0.4;
+    const tremolo = ctx.createGain();
+    tremolo.gain.value = 0.6;
+    grunt.connect(gruntDepth).connect(tremolo.gain);
+    voice.connect(tremolo);
+
+    const nose = ctx.createBiquadFilter();
+    nose.type = 'bandpass';
+    nose.frequency.value = 700 * pitch;
+    nose.Q.value = 3;
+    const nose2 = ctx.createBiquadFilter();
+    nose2.type = 'bandpass';
+    nose2.frequency.value = 1600 * pitch;
+    nose2.Q.value = 5;
+    const body = ctx.createBiquadFilter();
+    body.type = 'lowpass';
+    body.frequency.value = 500;
+    const bodyGain = ctx.createGain();
+    bodyGain.gain.value = 0.35;
+
+    // fungada curtinha no começo
+    const noise = ctx.createBufferSource();
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.08), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    noise.buffer = buf;
+    const sniff = ctx.createBiquadFilter();
+    sniff.type = 'bandpass';
+    sniff.frequency.value = 1200;
+    sniff.Q.value = 1.5;
+    const sniffGain = ctx.createGain();
+    sniffGain.gain.value = 0.5;
+
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.exponentialRampToValueAtTime(1, t + 0.02);
+    env.gain.setValueAtTime(1, t + len * 0.55);
+    env.gain.exponentialRampToValueAtTime(0.0001, end);
+
+    tremolo.connect(nose).connect(env);
+    tremolo.connect(nose2).connect(env);
+    tremolo.connect(body).connect(bodyGain).connect(env);
+    noise.connect(sniff).connect(sniffGain).connect(env);
+    env.connect(out);
+
+    voice.start(t);
+    grunt.start(t);
+    noise.start(t);
+    voice.stop(end + 0.05);
+    grunt.stop(end + 0.05);
+  }
+
+  function playOink(kind) {
+    const a = getAudio();
+    if (!a) return;
+    const t = a.ctx.currentTime + 0.02;
+    if (kind === 'in') {
+      // dois óincs felizes quando a moeda cai dentro
+      const delay = reducedMotion.matches ? 0 : 0.62;
+      oinkAt(a.ctx, a.out, t + delay, 1.25, 0.2);
+      oinkAt(a.ctx, a.out, t + delay + 0.24, 1.4, 0.24);
+    } else if (kind === 'out') {
+      // um óinc mais grave e comprido quando o dinheiro sai
+      oinkAt(a.ctx, a.out, t, 0.8, 0.45);
+    } else {
+      oinkAt(a.ctx, a.out, t, 0.95 + Math.random() * 0.25);
+    }
+  }
+
+  let lastPigTap = 0;
+  $('#pig').addEventListener('click', () => {
+    const now = performance.now();
+    if (now - lastPigTap < 150) return;
+    lastPigTap = now;
+    playOink('tap');
+    if (!reducedMotion.matches) {
+      restartAnim($('#pigBody'), 'boing');
+      floatText('Oinc!', 'oink');
+    }
+  });
+
+  // ---------- Ganhei / Gastei ----------
+  const dlg = $('#entryDlg');
+  const amountEl = $('#amount');
+  const noteEl = $('#note');
+  const saveBtn = $('#saveBtn');
+  let mode = 'in';
+  let cents = 0;
+
+  function chip(label, onClick) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = label;
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  function renderMoneyChips() {
+    const box = $('#moneyChips');
+    for (const [value, label, color] of MONEY) {
+      const b = chip('+' + label, () => { cents = Math.min(cents + value, 99999999); renderAmount(); });
+      b.style.background = color;
+      box.append(b);
+    }
+    const clear = chip('Zerar', () => { cents = 0; renderAmount(); });
+    clear.classList.add('clear');
+    box.append(clear);
+  }
+
+  function renderTags() {
+    const box = $('#tagChips');
+    box.replaceChildren(...(mode === 'in' ? EARN_TAGS : SPEND_TAGS).map(([emoji, text]) => {
+      const b = chip(`${emoji} ${text}`, () => { noteEl.value = text; syncTags(); validate(); });
+      b.dataset.text = text;
+      return b;
+    }));
+    syncTags();
+  }
+
+  function syncTags() {
+    for (const b of $('#tagChips').children) b.setAttribute('aria-pressed', b.dataset.text === noteEl.value.trim());
+  }
+
+  function renderAmount() {
+    amountEl.value = cents ? brl(cents) : '';
+    if (document.activeElement === amountEl) {
+      const end = amountEl.value.length;
+      amountEl.setSelectionRange(end, end);
+    }
+    validate();
+  }
+
+  function validate() {
+    const balance = sum(entries);
+    let warn = '';
+    if (mode === 'out' && balance <= 0) warn = 'O porquinho está vazio!';
+    else if (mode === 'out' && cents > balance) warn = `Opa! Só tem ${brl(balance)} no porquinho.`;
+    $('#warn').textContent = warn;
+    saveBtn.disabled = !cents || !noteEl.value.trim() || !!warn;
+  }
+
+  function openEntry(m) {
+    mode = m;
+    cents = 0;
+    noteEl.value = '';
+    dlg.dataset.mode = m;
+    $('#dlgTitle').textContent = m === 'in' ? 'Quanto você ganhou?' : 'Quanto você gastou?';
+    $('#noteLabel').textContent = m === 'in' ? 'De onde veio esse dinheiro?' : 'Com o que você gastou?';
+    noteEl.placeholder = m === 'in' ? 'Ex.: mesada da semana' : 'Ex.: figurinhas da Copa';
+    saveBtn.textContent = m === 'in' ? 'Guardar no porquinho' : 'Tirar do porquinho';
+    saveBtn.className = `big ${m === 'in' ? 'earn' : 'spend'}`;
+    renderTags();
+    renderAmount();
+    dlg.showModal();
+  }
+
+  amountEl.addEventListener('input', () => {
+    const digits = amountEl.value.replace(/\D/g, '').replace(/^0+/, '').slice(0, 8);
+    cents = digits ? parseInt(digits, 10) : 0;
+    renderAmount();
+  });
+  amountEl.addEventListener('focus', () => requestAnimationFrame(() => {
+    const end = amountEl.value.length;
+    amountEl.setSelectionRange(end, end);
+  }));
+  noteEl.addEventListener('input', () => { syncTags(); validate(); });
+
+  $('#entryForm').addEventListener('submit', ev => {
+    ev.preventDefault();
+    validate();
+    if (saveBtn.disabled) return;
+    const entry = { id: newId(), type: mode, cents, note: noteEl.value.trim(), at: new Date().toISOString() };
+    entries.push(entry);
+    if (!persist()) {
+      entries.pop();
+      return;
+    }
+    dlg.close();
+    playOink(entry.type);
+    celebrate(entry);
+    renderAll(true);
+  });
+
+  $('#earnBtn').addEventListener('click', () => openEntry('in'));
+  $('#spendBtn').addEventListener('click', () => openEntry('out'));
+  $('#cancelBtn').addEventListener('click', () => dlg.close());
+
+  // ---------- Apagar ----------
+  let pendingDelete = null;
+  function askDelete(e) {
+    pendingDelete = e;
+    $('#confirmText').textContent = `${e.note} (${e.type === 'in' ? '+' : '−'}${brl(e.cents)})`;
+    $('#confirmDlg').showModal();
+  }
+  $('#confirmNo').addEventListener('click', () => $('#confirmDlg').close());
+  $('#confirmYes').addEventListener('click', () => {
+    const before = entries;
+    entries = entries.filter(x => x.id !== pendingDelete.id);
+    if (!persist()) entries = before;
+    $('#confirmDlg').close();
+    renderAll(true);
+  });
+
+  // ---------- Cópia de segurança ----------
+  $('#backupOpen').addEventListener('click', () => $('#backupDlg').showModal());
+  $('#backupClose').addEventListener('click', () => $('#backupDlg').close());
+
+  $('#exportBtn').addEventListener('click', () => {
+    const data = JSON.stringify({ app: 'porquinho', version: 1, exportedAt: new Date().toISOString(), entries }, null, 2);
+    const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `porquinho-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  $('#importFile').addEventListener('change', async ev => {
+    const file = ev.target.files[0];
+    ev.target.value = '';
+    if (!file) return;
+    let list;
+    try {
+      const data = JSON.parse(await file.text());
+      list = (Array.isArray(data?.entries) ? data.entries : []).filter(valid).map(e => ({ ...e, id: e.id || newId() }));
+    } catch {
+      list = [];
+    }
+    if (!list.length) {
+      alert('Não consegui ler esse arquivo. Ele precisa ser uma cópia feita por este app.');
+      return;
+    }
+    if (!confirm(`Essa cópia tem ${list.length} registros e saldo de ${brl(sum(list))}. Trocar tudo o que está no app por ela?`)) return;
+    const before = entries;
+    entries = list;
+    if (!persist()) {
+      entries = before;
+      return;
+    }
+    $('#backupDlg').close();
+    renderAll(true);
+  });
+
+  // ---------- Início ----------
+  document.title = `Porquinho do ${NOME}`;
+  $('#who').textContent = `${NOME} tem no porquinho`;
+  renderMoneyChips();
+  renderAll(false);
+
+  // Atualiza "Hoje"/"Ontem" quando o app volta depois de virar o dia
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderList(); });
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
